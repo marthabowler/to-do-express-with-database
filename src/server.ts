@@ -22,6 +22,10 @@ const client = new Client({
   },
 });
 
+// const client = new Client({
+//   database: "to-do-list",
+// });
+
 client.connect();
 // ROUTES
 // get all todos
@@ -57,20 +61,21 @@ app.get("/", async (req, res) => {
 app.post("/todos", async (req, res) => {
   const { tasks, due_date, completed } = req.body;
   if (typeof tasks === "string" && typeof due_date === "string") {
-    const createdToDO = await client.query(
-      "INSERT INTO todos VALUES (default, $1, $2) RETURNING *",
-      [tasks, due_date]
-    );
-    res.status(201).json({
-      status: "success",
-      data: {
-        signature: createdToDO.rows, //return the relevant data (including its db-generated id)
-      },
-    });
     if (completed) {
       const createdToDO = await client.query(
-        "INSERT INTO todos VALUES (default, $1, $2, $3) RETURNING *",
+        "INSERT INTO todos(id, tasks, due_date, creation_date, completed) VALUES (default, $1, $2,default, $3) RETURNING *",
         [tasks, due_date, completed]
+      );
+      res.status(201).json({
+        status: "success",
+        data: {
+          signature: createdToDO.rows, //return the relevant data (including its db-generated id)
+        },
+      });
+    } else {
+      const createdToDO = await client.query(
+        "INSERT INTO todos(id, tasks, due_date) VALUES (default, $1, $2) RETURNING *",
+        [tasks, due_date]
       );
       res.status(201).json({
         status: "success",
@@ -151,7 +156,7 @@ app.put("/todos/:id", async (req, res) => {
 
     if (result.rowCount === 1) {
       const updatedToDo = await client.query(
-        "UPDATE todos SET tasks = $1, due_date= $2, completed = $3 WHERE id= $4",
+        "UPDATE todos SET tasks = $1, due_date= $2 WHERE id= $4",
         [tasks, due_date, id]
       );
       res.status(200).json({
