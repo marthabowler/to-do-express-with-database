@@ -15,12 +15,26 @@ dotenv.config();
 const PORT_NUMBER = process.env.PORT ?? 4000;
 
 const Client = require("pg").Client;
-const client = new Client({ database: "to-do-list" });
+const client = new Client({ database: "to-do-list", port: 24459 });
 
 client.connect();
 // ROUTES
 // get all todos
 app.get("/todos", async (req, res) => {
+  try {
+    const allToDos = await client.query(
+      "SELECT * FROM todos ORDER BY completed"
+    );
+    res.status(200).json({
+      status: "success",
+      data: allToDos.rows,
+    });
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+app.get("/", async (req, res) => {
   try {
     const allToDos = await client.query(
       "SELECT * FROM todos ORDER BY completed"
