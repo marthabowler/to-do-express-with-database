@@ -55,7 +55,7 @@ app.get("/", async (req, res) => {
 
 // create a todo
 app.post("/todos", async (req, res) => {
-  const { tasks, due_date } = req.body;
+  const { tasks, due_date, completed } = req.body;
   if (typeof tasks === "string" && typeof due_date === "string") {
     const createdToDO = await client.query(
       "INSERT INTO todos VALUES (default, $1, $2) RETURNING *",
@@ -67,6 +67,18 @@ app.post("/todos", async (req, res) => {
         signature: createdToDO.rows, //return the relevant data (including its db-generated id)
       },
     });
+    if (completed) {
+      const createdToDO = await client.query(
+        "INSERT INTO todos VALUES (default, $1, $2, $3) RETURNING *",
+        [tasks, due_date, completed]
+      );
+      res.status(201).json({
+        status: "success",
+        data: {
+          signature: createdToDO.rows, //return the relevant data (including its db-generated id)
+        },
+      });
+    }
   } else {
     res.status(400).json({
       status: "fail",
