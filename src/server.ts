@@ -22,7 +22,9 @@ client.connect();
 // get all todos
 app.get("/todos", async (req, res) => {
   try {
-    const allToDos = await client.query("SELECT * FROM todos LIMIT 100");
+    const allToDos = await client.query(
+      "SELECT * FROM todos ORDER BY completed"
+    );
     res.status(200).json({
       status: "success",
       data: allToDos.rows,
@@ -118,7 +120,7 @@ app.put("/todos/:id", async (req, res) => {
 
     if (result.rowCount === 1) {
       const updatedToDo = await client.query(
-        "UPDATE todos SET tasks = $1, due_date= $2 WHERE id= $3",
+        "UPDATE todos SET tasks = $1, due_date= $2, completed = $3 WHERE id= $4",
         [tasks, due_date, id]
       );
       res.status(200).json({
@@ -140,6 +142,30 @@ app.put("/todos/:id", async (req, res) => {
       status: "fail",
       data: {
         id: "Could not find a todo with that id identifier",
+      },
+    });
+  }
+});
+
+app.put("/todos/:id/complete", async (req, res) => {
+  const id = parseInt(req.params.id);
+  const queryResult = await client.query(
+    "UPDATE todos SET completed = NOT completed WHERE id = $1",
+    [id]
+  ); //FIXME-TASK: update the signature with given id in the DB.
+  if (queryResult.rowCount === 1) {
+    const updatedTask = queryResult.rows[0];
+    res.status(200).json({
+      status: "success",
+      data: {
+        task: updatedTask,
+      },
+    });
+  } else {
+    res.status(404).json({
+      status: "fail",
+      data: {
+        id: "Could not find a task with that id identifier",
       },
     });
   }
