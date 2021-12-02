@@ -16,9 +16,10 @@ dotenv.config();
 const PORT_NUMBER = process.env.PORT ?? 4000;
 
 const client = new Client({
-  host: "localhost",
-  database: "to-do-list",
-  port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 client.connect();
