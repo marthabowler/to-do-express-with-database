@@ -15,7 +15,11 @@ dotenv.config();
 // use the environment variable PORT, or 4000 as a fallback
 const PORT_NUMBER = process.env.PORT ?? 4000;
 
-const client = new Client({ database: "to-do-list" });
+const client = new Client({
+  host: "localhost",
+  database: "to-do-list",
+  port: 5432,
+});
 
 client.connect();
 // ROUTES
