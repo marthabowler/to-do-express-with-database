@@ -156,7 +156,7 @@ app.put("/todos/:id", async (req, res) => {
 
     if (result.rowCount === 1) {
       const updatedToDo = await client.query(
-        "UPDATE todos SET tasks = $1, due_date= $2 WHERE id= $4",
+        "UPDATE todos SET tasks = $1, due_date= $2 WHERE id= $3",
         [tasks, due_date, id]
       );
       res.status(200).json({
