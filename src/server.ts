@@ -15,7 +15,7 @@ dotenv.config();
 const PORT_NUMBER = process.env.PORT ?? 4000;
 
 const Client = require("pg").Client;
-const client = new Client({ database: "to-do-list", port: 24459 });
+const client = new Client({ database: "to-do-list" });
 
 client.connect();
 // ROUTES
