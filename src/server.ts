@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { Client } from "pg";
 
 const app = express();
 
@@ -14,7 +15,6 @@ dotenv.config();
 // use the environment variable PORT, or 4000 as a fallback
 const PORT_NUMBER = process.env.PORT ?? 4000;
 
-const Client = require("pg").Client;
 const client = new Client({ database: "to-do-list" });
 
 client.connect();
