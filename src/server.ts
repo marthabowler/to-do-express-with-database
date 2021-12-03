@@ -15,21 +15,17 @@ dotenv.config();
 // use the environment variable PORT, or 4000 as a fallback
 const PORT_NUMBER = process.env.PORT ?? 4000;
 
-const myConnectionString =
+const client =
   process.env.NODE_ENV === "production"
-    ? process.env.DATABASE_URL
-    : process.env.URL;
-
-const client = new Client({
-  connectionString: myConnectionString,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
-
-// const client = new Client({
-//   database: "to-do-list",
-// });
+    ? new Client({
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      })
+    : new Client({
+        database: "to-do-list",
+      });
 
 client.connect();
 // ROUTES
