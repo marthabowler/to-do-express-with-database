@@ -15,8 +15,13 @@ dotenv.config();
 // use the environment variable PORT, or 4000 as a fallback
 const PORT_NUMBER = process.env.PORT ?? 4000;
 
+const myConnectionString =
+  process.env.NODE_ENV === "production"
+    ? process.env.DATABASE_URL
+    : process.env.URL;
+
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: myConnectionString,
   ssl: {
     rejectUnauthorized: false,
   },
@@ -32,7 +37,7 @@ client.connect();
 app.get("/todos", async (req, res) => {
   try {
     const allToDos = await client.query(
-      "SELECT * FROM todos ORDER BY completed"
+      "SELECT * FROM todos ORDER BY completed, tasks"
     );
     res.status(200).json({
       status: "success",
@@ -46,7 +51,7 @@ app.get("/todos", async (req, res) => {
 app.get("/", async (req, res) => {
   try {
     const allToDos = await client.query(
-      "SELECT * FROM todos ORDER BY completed"
+      "SELECT * FROM todos ORDER BY completed "
     );
     res.status(200).json({
       status: "success",
@@ -145,34 +150,17 @@ app.delete("/todos/:id", async (req, res) => {
 
 // update a todo
 app.put("/todos/:id", async (req, res) => {
-  //  :id refers to a route parameter, which will be made available in req.params.id
+  const id = parseInt(req.params.id);
   const { tasks, due_date } = req.body;
-  const { id } = req.params;
-  if (typeof tasks === "string" && typeof due_date === "string") {
-    const result = await client.query("SELECT * FROM todos WHERE id = $1", [
-      id,
-    ]);
-    console.log(result.rowCount);
-
-    if (result.rowCount === 1) {
-      const updatedToDo = await client.query(
-        "UPDATE todos SET tasks = $1, due_date= $2 WHERE id= $3",
-        [tasks, due_date, id]
-      );
-      res.status(200).json({
-        status: "success",
-        data: {
-          todos: updatedToDo.rows[0],
-        },
-      });
-    } else {
-      res.status(404).json({
-        status: "fail",
-        data: {
-          id: "Could not find a todo with that id identifier",
-        },
-      });
-    }
+  const result = await client.query(
+    "UPDATE todos SET tasks = $1, due_date = $2 WHERE id = $3 RETURNING *;",
+    [tasks, due_date, id]
+  );
+  if (result.rowCount !== 0) {
+    res.status(200).json({
+      status: "success",
+      result,
+    });
   } else {
     res.status(404).json({
       status: "fail",
